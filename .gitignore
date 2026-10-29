@@ -480,3 +480,11 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+
+
+
+# Local environment configuration
+.env
+.env.*
+!.env.example
