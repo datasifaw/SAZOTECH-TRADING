@@ -1,0 +1,6 @@
+@SAZOTECH.Trading.API_HostAddress = http://localhost:5187
+
+GET {{SAZOTECH.Trading.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
