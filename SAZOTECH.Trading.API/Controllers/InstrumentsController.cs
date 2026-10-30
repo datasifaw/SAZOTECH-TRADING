@@ -123,17 +123,36 @@ public class InstrumentsController : ControllerBase
             });
         }
 
-        // Update editable fields only
         instrument.Symbol = updatedInstrument.Symbol;
         instrument.Name = updatedInstrument.Name;
         instrument.Exchange = updatedInstrument.Exchange;
         instrument.LastPrice = updatedInstrument.LastPrice;
         instrument.Currency = updatedInstrument.Currency;
 
-        // Keep original Id and CreatedAt
         await _context.SaveChangesAsync();
 
         return Ok(instrument);
+    }
+
+    // DELETE: api/instruments/{id}
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var instrument = await _context.FinancialInstruments
+            .FirstOrDefaultAsync(i => i.Id == id);
+
+        if (instrument is null)
+        {
+            return NotFound(new
+            {
+                Message = $"Instrument with ID {id} was not found."
+            });
+        }
+
+        _context.FinancialInstruments.Remove(instrument);
+        await _context.SaveChangesAsync();
+
+        return NoContent();
     }
 
     // Normalize financial instrument data
