@@ -17,12 +17,38 @@ public class TradingOrdersController : ControllerBase
         _context = context;
     }
 
+    // GET: api/orders
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var orders = await _context.TradingOrders
+            .AsNoTracking()
+            .Include(o => o.FinancialInstrument)
+            .OrderByDescending(o => o.CreatedAt)
+            .ThenByDescending(o => o.Id)
+            .Select(o => new
+            {
+                o.Id,
+                o.FinancialInstrumentId,
+                Symbol = o.FinancialInstrument.Symbol,
+                o.OrderType,
+                o.Quantity,
+                o.Price,
+                o.TotalAmount,
+                o.Status,
+                o.CreatedAt
+            })
+            .ToListAsync();
+
+        return Ok(orders);
+    }
+
     // POST: api/orders
     [HttpPost]
     public async Task<IActionResult> Create(
         [FromBody] CreateTradingOrderRequest request)
     {
-        // Validate order type and quantity
+        // Validate order type
         string orderType = request.OrderType?
             .Trim()
             .ToUpperInvariant() ?? "";
@@ -35,6 +61,7 @@ public class TradingOrdersController : ControllerBase
             });
         }
 
+        // Validate quantity
         if (request.Quantity <= 0)
         {
             return BadRequest(new
@@ -43,7 +70,7 @@ public class TradingOrdersController : ControllerBase
             });
         }
 
-        // Check financial instrument
+        // Find financial instrument
         var instrument = await _context.FinancialInstruments
             .AsNoTracking()
             .FirstOrDefaultAsync(
@@ -57,9 +84,8 @@ public class TradingOrdersController : ControllerBase
             });
         }
 
-        // Calculate the simulated order amount
+        // Calculate simulated order value
         decimal price = instrument.LastPrice;
-
         decimal totalAmount;
 
         try
@@ -74,7 +100,7 @@ public class TradingOrdersController : ControllerBase
             });
         }
 
-        // Match SQL Server decimal(18,4) limits
+        // Validate SQL Server decimal(18,4) limits
         if (price <= 0 ||
             totalAmount > 99999999999999.9999m)
         {
@@ -84,7 +110,7 @@ public class TradingOrdersController : ControllerBase
             });
         }
 
-        // Create a new pending order
+        // Create pending trading order
         var order = new TradingOrder
         {
             FinancialInstrumentId = instrument.Id,
@@ -114,7 +140,7 @@ public class TradingOrdersController : ControllerBase
     }
 }
 
-// Request DTO: only client-editable fields
+// Request DTO
 public class CreateTradingOrderRequest
 {
     public int FinancialInstrumentId { get; set; }
