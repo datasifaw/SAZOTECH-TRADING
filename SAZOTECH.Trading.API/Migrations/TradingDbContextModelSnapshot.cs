@@ -64,6 +64,61 @@ namespace SAZOTECH.Trading.API.Migrations
 
                     b.ToTable("FinancialInstruments");
                 });
+
+            modelBuilder.Entity("SAZOTECH.Trading.API.Models.TradingOrder", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("FinancialInstrumentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("OrderType")
+                        .IsRequired()
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("NEW");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FinancialInstrumentId");
+
+                    b.ToTable("TradingOrders");
+                });
+
+            modelBuilder.Entity("SAZOTECH.Trading.API.Models.TradingOrder", b =>
+                {
+                    b.HasOne("SAZOTECH.Trading.API.Models.FinancialInstrument", "FinancialInstrument")
+                        .WithMany()
+                        .HasForeignKey("FinancialInstrumentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("FinancialInstrument");
+                });
 #pragma warning restore 612, 618
         }
     }
