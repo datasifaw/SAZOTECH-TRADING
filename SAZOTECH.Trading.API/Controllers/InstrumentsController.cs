@@ -29,28 +29,56 @@ public class InstrumentsController : ControllerBase
         return Ok(instruments);
     }
 
+    // GET: api/instruments/{id}
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<FinancialInstrument>> GetById(int id)
+    {
+        var instrument = await _context.FinancialInstruments
+            .AsNoTracking()
+            .FirstOrDefaultAsync(i => i.Id == id);
+
+        if (instrument is null)
+        {
+            return NotFound(new
+            {
+                Message = $"Instrument with ID {id} was not found."
+            });
+        }
+
+        return Ok(instrument);
+    }
+
     // POST: api/instruments
     [HttpPost]
     public async Task<ActionResult<FinancialInstrument>> Create(
         [FromBody] FinancialInstrument instrument)
     {
-        // Validate input
+        // Normalize input
+        instrument.Symbol = instrument.Symbol?.Trim().ToUpperInvariant() ?? "";
+        instrument.Name = instrument.Name?.Trim() ?? "";
+        instrument.Exchange = instrument.Exchange?.Trim() ?? "";
+        instrument.Currency = instrument.Currency?.Trim().ToUpperInvariant() ?? "";
+
+        // Validate input against database constraints
         if (string.IsNullOrWhiteSpace(instrument.Symbol) ||
+            instrument.Symbol.Length > 20 ||
             string.IsNullOrWhiteSpace(instrument.Name) ||
+            instrument.Name.Length > 200 ||
             string.IsNullOrWhiteSpace(instrument.Exchange) ||
-            string.IsNullOrWhiteSpace(instrument.Currency) ||
-            instrument.LastPrice <= 0)
+            instrument.Exchange.Length > 50 ||
+            instrument.Currency.Length != 3 ||
+            !instrument.Currency.All(c => c >= 'A' && c <= 'Z') ||
+            instrument.LastPrice <= 0 ||
+            instrument.LastPrice > 99999999999999.9999m ||
+            decimal.Round(instrument.LastPrice, 4) != instrument.LastPrice)
         {
             return BadRequest(new
             {
-                Message = "Invalid financial instrument data."
+                Message = "Invalid instrument data. Check required fields, lengths, currency code and price."
             });
         }
 
-        // Normalize the symbol
-        instrument.Symbol = instrument.Symbol.Trim().ToUpperInvariant();
-
-        // Check for duplicates
+        // Check for duplicate symbols
         bool exists = await _context.FinancialInstruments
             .AnyAsync(i => i.Symbol == instrument.Symbol);
 
@@ -66,7 +94,7 @@ public class InstrumentsController : ControllerBase
         instrument.Id = 0;
         instrument.CreatedAt = DateTime.UtcNow;
 
-        // Save to SQL Server
+        // Save instrument to SQL Server
         _context.FinancialInstruments.Add(instrument);
         await _context.SaveChangesAsync();
 
