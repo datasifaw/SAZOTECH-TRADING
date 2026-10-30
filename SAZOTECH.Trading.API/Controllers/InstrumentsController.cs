@@ -53,24 +53,9 @@ public class InstrumentsController : ControllerBase
     public async Task<ActionResult<FinancialInstrument>> Create(
         [FromBody] FinancialInstrument instrument)
     {
-        // Normalize input
-        instrument.Symbol = instrument.Symbol?.Trim().ToUpperInvariant() ?? "";
-        instrument.Name = instrument.Name?.Trim() ?? "";
-        instrument.Exchange = instrument.Exchange?.Trim() ?? "";
-        instrument.Currency = instrument.Currency?.Trim().ToUpperInvariant() ?? "";
+        Normalize(instrument);
 
-        // Validate input against database constraints
-        if (string.IsNullOrWhiteSpace(instrument.Symbol) ||
-            instrument.Symbol.Length > 20 ||
-            string.IsNullOrWhiteSpace(instrument.Name) ||
-            instrument.Name.Length > 200 ||
-            string.IsNullOrWhiteSpace(instrument.Exchange) ||
-            instrument.Exchange.Length > 50 ||
-            instrument.Currency.Length != 3 ||
-            !instrument.Currency.All(c => c >= 'A' && c <= 'Z') ||
-            instrument.LastPrice <= 0 ||
-            instrument.LastPrice > 99999999999999.9999m ||
-            decimal.Round(instrument.LastPrice, 4) != instrument.LastPrice)
+        if (!IsValid(instrument))
         {
             return BadRequest(new
             {
@@ -78,7 +63,6 @@ public class InstrumentsController : ControllerBase
             });
         }
 
-        // Check for duplicate symbols
         bool exists = await _context.FinancialInstruments
             .AnyAsync(i => i.Symbol == instrument.Symbol);
 
@@ -90,14 +74,98 @@ public class InstrumentsController : ControllerBase
             });
         }
 
-        // Set server-managed fields
         instrument.Id = 0;
         instrument.CreatedAt = DateTime.UtcNow;
 
-        // Save instrument to SQL Server
         _context.FinancialInstruments.Add(instrument);
         await _context.SaveChangesAsync();
 
         return StatusCode(201, instrument);
+    }
+
+    // PUT: api/instruments/{id}
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> Update(
+        int id,
+        [FromBody] FinancialInstrument updatedInstrument)
+    {
+        var instrument = await _context.FinancialInstruments
+            .FirstOrDefaultAsync(i => i.Id == id);
+
+        if (instrument is null)
+        {
+            return NotFound(new
+            {
+                Message = $"Instrument with ID {id} was not found."
+            });
+        }
+
+        Normalize(updatedInstrument);
+
+        if (!IsValid(updatedInstrument))
+        {
+            return BadRequest(new
+            {
+                Message = "Invalid instrument data. Check required fields, lengths, currency code and price."
+            });
+        }
+
+        bool duplicateSymbol = await _context.FinancialInstruments
+            .AnyAsync(i =>
+                i.Symbol == updatedInstrument.Symbol &&
+                i.Id != id);
+
+        if (duplicateSymbol)
+        {
+            return Conflict(new
+            {
+                Message = "An instrument with this symbol already exists."
+            });
+        }
+
+        // Update editable fields only
+        instrument.Symbol = updatedInstrument.Symbol;
+        instrument.Name = updatedInstrument.Name;
+        instrument.Exchange = updatedInstrument.Exchange;
+        instrument.LastPrice = updatedInstrument.LastPrice;
+        instrument.Currency = updatedInstrument.Currency;
+
+        // Keep original Id and CreatedAt
+        await _context.SaveChangesAsync();
+
+        return Ok(instrument);
+    }
+
+    // Normalize financial instrument data
+    private static void Normalize(FinancialInstrument instrument)
+    {
+        instrument.Symbol =
+            instrument.Symbol?.Trim().ToUpperInvariant() ?? "";
+
+        instrument.Name =
+            instrument.Name?.Trim() ?? "";
+
+        instrument.Exchange =
+            instrument.Exchange?.Trim() ?? "";
+
+        instrument.Currency =
+            instrument.Currency?.Trim().ToUpperInvariant() ?? "";
+    }
+
+    // Validate against SQL Server constraints
+    private static bool IsValid(FinancialInstrument instrument)
+    {
+        return !string.IsNullOrWhiteSpace(instrument.Symbol)
+            && instrument.Symbol.Length <= 20
+            && !string.IsNullOrWhiteSpace(instrument.Name)
+            && instrument.Name.Length <= 200
+            && !string.IsNullOrWhiteSpace(instrument.Exchange)
+            && instrument.Exchange.Length <= 50
+            && instrument.Currency.Length == 3
+            && instrument.Currency.All(c => c >= 'A' && c <= 'Z')
+            && instrument.LastPrice > 0
+            && instrument.LastPrice <= 99999999999999.9999m
+            && decimal.Round(instrument.LastPrice, 4)
+                == instrument.LastPrice;
     }
 }
