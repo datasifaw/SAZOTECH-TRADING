@@ -23,7 +23,6 @@ public class TradingOrdersController : ControllerBase
     {
         var orders = await _context.TradingOrders
             .AsNoTracking()
-            .Include(o => o.FinancialInstrument)
             .OrderByDescending(o => o.CreatedAt)
             .ThenByDescending(o => o.Id)
             .Select(o => new
@@ -43,12 +42,43 @@ public class TradingOrdersController : ControllerBase
         return Ok(orders);
     }
 
+    // GET: api/orders/{id}
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var order = await _context.TradingOrders
+            .AsNoTracking()
+            .Where(o => o.Id == id)
+            .Select(o => new
+            {
+                o.Id,
+                o.FinancialInstrumentId,
+                Symbol = o.FinancialInstrument.Symbol,
+                o.OrderType,
+                o.Quantity,
+                o.Price,
+                o.TotalAmount,
+                o.Status,
+                o.CreatedAt
+            })
+            .FirstOrDefaultAsync();
+
+        if (order is null)
+        {
+            return NotFound(new
+            {
+                Message = $"Trading order with ID {id} was not found."
+            });
+        }
+
+        return Ok(order);
+    }
+
     // POST: api/orders
     [HttpPost]
     public async Task<IActionResult> Create(
         [FromBody] CreateTradingOrderRequest request)
     {
-        // Validate order type
         string orderType = request.OrderType?
             .Trim()
             .ToUpperInvariant() ?? "";
@@ -61,7 +91,6 @@ public class TradingOrdersController : ControllerBase
             });
         }
 
-        // Validate quantity
         if (request.Quantity <= 0)
         {
             return BadRequest(new
@@ -70,7 +99,6 @@ public class TradingOrdersController : ControllerBase
             });
         }
 
-        // Find financial instrument
         var instrument = await _context.FinancialInstruments
             .AsNoTracking()
             .FirstOrDefaultAsync(
@@ -84,7 +112,6 @@ public class TradingOrdersController : ControllerBase
             });
         }
 
-        // Calculate simulated order value
         decimal price = instrument.LastPrice;
         decimal totalAmount;
 
@@ -100,7 +127,6 @@ public class TradingOrdersController : ControllerBase
             });
         }
 
-        // Validate SQL Server decimal(18,4) limits
         if (price <= 0 ||
             totalAmount > 99999999999999.9999m)
         {
@@ -110,7 +136,6 @@ public class TradingOrdersController : ControllerBase
             });
         }
 
-        // Create pending trading order
         var order = new TradingOrder
         {
             FinancialInstrumentId = instrument.Id,
