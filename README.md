@@ -9,6 +9,7 @@
 > **Project Status:** Phase 2 Completed — Database Integration  
 > **Current Version:** MVP under development  
 > **Next Phase:** Financial Instruments CRUD API
+> 
 
 ## Project Overview
 
