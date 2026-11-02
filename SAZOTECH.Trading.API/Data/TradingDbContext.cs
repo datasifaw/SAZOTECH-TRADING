@@ -18,9 +18,12 @@ public class TradingDbContext : DbContext
     public DbSet<TradingOrder> TradingOrders
         => Set<TradingOrder>();
 
+    public DbSet<PortfolioPosition> PortfolioPositions
+        => Set<PortfolioPosition>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Financial Instruments configuration
+        // Financial instruments
         modelBuilder.Entity<FinancialInstrument>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -48,7 +51,7 @@ public class TradingDbContext : DbContext
                 .HasPrecision(18, 4);
         });
 
-        // Trading Orders configuration
+        // Trading orders
         modelBuilder.Entity<TradingOrder>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -77,6 +80,30 @@ public class TradingDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(e => e.FinancialInstrumentId);
+        });
+
+        // Portfolio positions
+        modelBuilder.Entity<PortfolioPosition>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Quantity)
+                .IsRequired();
+
+            entity.Property(e => e.AveragePrice)
+                .HasPrecision(18, 4);
+
+            entity.Property(e => e.UpdatedAt)
+                .IsRequired();
+
+            entity.HasOne(e => e.FinancialInstrument)
+                .WithMany()
+                .HasForeignKey(e => e.FinancialInstrumentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // One aggregated position per financial instrument
+            entity.HasIndex(e => e.FinancialInstrumentId)
+                .IsUnique();
         });
     }
 }
