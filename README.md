@@ -6,22 +6,20 @@
 
 ![SAZOTECH Trading — Target Interface](image/INTERFACE_2.png)
 
-> **Project Status:** Phase 6 Completed — Automated Testing  
-> **Current Version:** MVP under development  
-> **Next Phase:** Phase 7 — Final Docker Setup & Documentation  
+> **Project Status:** Phase 7 — Final Validation in Progress  
+> **Release Target:** MVP V1.0  
+> **Completed Phases:** 0–6  
 > **Trading Environment:** Simulated trading only
 
 ## Project Overview
 
-SAZOTECH-TRADING is a backend-focused trading order management system built with C#, ASP.NET Core Web API, Entity Framework Core, and Microsoft SQL Server.
+SAZOTECH-TRADING is a backend-focused trading order management system developed with C#, .NET 10, ASP.NET Core Web API, Entity Framework Core, and Microsoft SQL Server.
 
-The application simulates financial instrument management, BUY and SELL order registration, order execution, portfolio position tracking, and basic portfolio valuation.
+The application provides financial instrument management, BUY and SELL order registration, simulated order execution, portfolio position tracking, and basic portfolio valuation.
 
-Automated tests validate core trading business rules using xUnit and isolated SQLite in-memory databases.
+The project follows a Git feature-branch workflow with Conventional Commits and GitHub Pull Requests.
 
-The project follows an incremental development workflow using Git feature branches, Conventional Commits, and GitHub Pull Requests.
-
-All market prices and trading operations are simulated. No real financial transactions are performed.
+No real trading or financial transactions are performed.
 
 ## Technology Stack
 
@@ -33,12 +31,12 @@ All market prices and trading operations are simulated. No real financial transa
 | ORM | Entity Framework Core 10 |
 | Database Migrations | EF Core Code First |
 | Containers | Docker / Docker Compose |
-| Database Management | SQL Server Management Studio (SSMS) |
-| Automated Testing | xUnit |
-| Isolated Test Database | SQLite in-memory |
-| Security | .NET User Secrets, NuGet Vulnerability Auditing |
+| Database Management | SQL Server Management Studio |
+| Automated Tests | xUnit |
+| Test Database | SQLite in-memory |
+| Security | .NET User Secrets, environment variables |
+| Development | Visual Studio Code |
 | Version Control | Git / GitHub |
-| Development Environment | Visual Studio Code |
 
 ## Development Progress
 
@@ -51,85 +49,89 @@ All market prices and trading operations are simulated. No real financial transa
 | 4 | Trading Orders Management | Completed |
 | 5 | Order Execution & Portfolio Positions | Completed |
 | 6 | Automated Testing with xUnit | Completed |
-| 7 | Final Docker Setup & Documentation | Next |
+| 7 | Final Docker Setup & Documentation | In Progress |
 
 ## Implemented Features
 
 ### Phase 0 — Project Initialization
 
 - Create the .NET solution and ASP.NET Core Web API project.
-- Initialize Git and configure the GitHub repository.
-- Configure `.gitignore` and project documentation.
+- Initialize Git and configure GitHub.
+- Set up project documentation and `.gitignore`.
 - Establish a feature-branch development workflow.
 
 ### Phase 1 — REST API & Swagger
 
 - Configure ASP.NET Core API controllers.
 - Enable Swagger / OpenAPI.
-- Add an application health-check endpoint.
+- Provide an application health-check endpoint.
 
 ### Phase 2 — Database Integration
 
-- Run SQL Server 2022 in Docker.
+- Run SQL Server 2022 using Docker Compose.
 - Configure Entity Framework Core 10.
-- Implement the `TradingDbContext`.
-- Create and apply Code First database migrations.
-- Configure database credentials using .NET User Secrets.
-- Add a database connectivity endpoint.
+- Implement `TradingDbContext`.
+- Create and apply database migrations.
+- Configure local database credentials using .NET User Secrets.
+- Provide a database connectivity endpoint.
 
 ### Phase 3 — Financial Instruments CRUD
 
 - Create financial instruments.
-- Retrieve all instruments or an individual instrument.
+- Retrieve all instruments or one instrument by ID.
 - Update instrument information.
-- Delete instruments when database constraints permit.
+- Delete instruments when relational constraints permit.
 - Validate instrument properties.
 - Prevent duplicate instrument symbols.
 
 ### Phase 4 — Trading Orders Management
 
 - Register BUY and SELL orders.
-- Associate orders with financial instruments.
+- Associate orders with existing instruments.
 - Validate order types and quantities.
-- Calculate order totals using recorded prices.
-- Persist trading orders in SQL Server.
-- Retrieve orders individually or as a collection.
-- Initialize new orders with `NEW` status.
+- Calculate order values using recorded prices.
+- Store orders in SQL Server.
+- Retrieve orders by ID or as a collection.
+- Initialize orders with `NEW` status.
 
 ### Phase 5 — Order Execution & Portfolio Positions
 
 - Execute pending BUY and SELL orders.
-- Update executed orders to `EXECUTED` status.
+- Update successful orders to `EXECUTED`.
 - Prevent sequential double execution.
-- Reject SELL executions when holdings are insufficient.
+- Reject SELL executions with insufficient holdings.
 - Create and update aggregated portfolio positions.
-- Recalculate weighted average acquisition prices.
-- Reduce positions after SELL executions.
-- Remove positions when all shares are sold.
-- Use SQL database transactions for order execution.
-- Expose portfolio positions through REST endpoints.
+- Calculate weighted average acquisition prices.
+- Reduce holdings after SELL execution.
+- Remove fully closed positions.
+- Use database transactions to update orders and positions together.
+- Provide portfolio retrieval endpoints.
 - Calculate market value, cost basis, and unrealized P&L.
 
 ### Phase 6 — Automated Testing
 
-- Create a dedicated `.NET 10` xUnit test project.
-- Reference the API project from the test project.
-- Add SQLite in-memory database support.
+- Create a dedicated xUnit test project.
+- Configure SQLite in-memory databases for isolated tests.
 - Test portfolio position model properties.
-- Test order-not-found handling.
-- Test already-executed order protection.
-- Test BUY position creation.
-- Test weighted average acquisition prices.
-- Test partial SELL executions.
-- Test insufficient-holdings rejection.
-- Test SELL orders without an existing position.
-- Test complete position closure.
-- Test invalid quantities, order types, and prices.
-- Verify that rejected execution attempts do not alter positions.
+- Test BUY position creation and weighted average prices.
+- Test partial and full SELL execution.
+- Test insufficient holdings and missing positions.
+- Test invalid orders and HTTP error responses.
+- Verify sequential double-execution prevention.
 
-**Latest validated test result: 16 passed, 0 failed.**
+**Latest validated result: 16 tests passed, 0 failed.**
 
-These tests cover the main application execution scenarios against SQLite in-memory databases. They do not yet replace SQL Server-specific integration or concurrent-execution testing.
+### Phase 7 — Final Docker Setup & Documentation
+
+Finalization activities include:
+
+- Validate Docker Compose and SQL Server connectivity.
+- Check database persistence and host-port mappings.
+- Protect local secrets with `.gitignore`.
+- Provide a safe `.env.example`.
+- Ensure both API and xUnit projects are included in the solution.
+- Document local port reservations.
+- Perform final build, test, and startup verification.
 
 ## API Endpoints
 
@@ -138,14 +140,14 @@ These tests cover the main application execution scenarios against SQLite in-mem
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | `/api/health` | Application health check |
-| GET | `/api/database/status` | SQL Server connectivity check |
+| GET | `/api/database/status` | Database connectivity check |
 
 ### Financial Instruments
 
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | `/api/instruments` | Retrieve all instruments |
-| GET | `/api/instruments/{id}` | Retrieve an instrument by ID |
+| GET | `/api/instruments/{id}` | Retrieve an instrument |
 | POST | `/api/instruments` | Create an instrument |
 | PUT | `/api/instruments/{id}` | Update an instrument |
 | DELETE | `/api/instruments/{id}` | Delete an instrument |
@@ -154,42 +156,40 @@ These tests cover the main application execution scenarios against SQLite in-mem
 
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/api/orders` | Retrieve all trading orders |
-| GET | `/api/orders/{id}` | Retrieve an order by ID |
+| GET | `/api/orders` | Retrieve all orders |
+| GET | `/api/orders/{id}` | Retrieve an order |
 | POST | `/api/orders` | Create a BUY or SELL order |
-| POST | `/api/orders/{id}/execute` | Execute a pending trading order |
+| POST | `/api/orders/{id}/execute` | Execute a pending order |
 
 ### Portfolio Positions
 
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/api/positions` | Retrieve all open positions |
-| GET | `/api/positions/{id}` | Retrieve a position by ID |
+| GET | `/api/positions` | Retrieve open positions |
+| GET | `/api/positions/{id}` | Retrieve a position |
 
 ## Trading Workflow
 
 1. Register or retrieve a financial instrument.
 2. Create a BUY or SELL order.
-3. Verify that the order status is `NEW`.
+3. Confirm that its status is `NEW`.
 4. Execute the order.
-5. Update the portfolio position and change the order status to `EXECUTED`.
-6. Retrieve the updated portfolio positions.
+5. Update the portfolio position and mark the order as `EXECUTED`.
+6. Retrieve updated portfolio information.
 
 ### BUY Execution
 
-A BUY increases the number of shares held.
+A BUY increases the quantity held.
 
-When the instrument already has an open position, the weighted average acquisition price is recalculated:
+When a position already exists, the weighted average acquisition price is calculated using:
 
 **New Average Price = (Existing Quantity × Existing Average Price + Purchased Quantity × Purchase Price) / Total Quantity**
 
 ### SELL Execution
 
-A SELL reduces the number of shares held.
+A SELL decreases the quantity held.
 
-An execution attempt returns a conflict when the available position is insufficient.
-
-When all shares are sold, the open portfolio position is removed while the trading order history remains available.
+The execution is refused if the requested quantity exceeds available holdings. Fully closed portfolio positions are removed while order history is retained.
 
 ### Order Statuses
 
@@ -198,7 +198,7 @@ When all shares are sold, the open portfolio position is removed while the tradi
 | `NEW` | Registered but not yet executed |
 | `EXECUTED` | Successfully executed |
 
-Insufficient-holdings execution attempts are rejected with HTTP `409`, but the corresponding order remains `NEW` in the current MVP.
+A failed execution due to insufficient holdings returns HTTP `409`, while the order remains `NEW`.
 
 ## Portfolio Valuation
 
@@ -208,20 +208,18 @@ Insufficient-holdings execution attempts are rejected with HTTP `409`, but the c
 | Cost Basis | Quantity × Average Acquisition Price |
 | Unrealized P&L | Market Value − Cost Basis |
 
-Calculations use simulated market data and exclude trading fees, taxes, and realized profit or loss.
+These calculations use simulated prices and exclude fees, taxes, and realized P&L.
 
 ## Database Architecture
 
 **Database:** `SazotechTradingDb`
 
-### Tables
-
 | Table | Description |
 |---|---|
-| `FinancialInstruments` | Instrument reference data |
+| `FinancialInstruments` | Financial instrument reference data |
 | `TradingOrders` | BUY and SELL order history |
-| `PortfolioPositions` | Aggregated open positions |
-| `__EFMigrationsHistory` | Entity Framework Core migration history |
+| `PortfolioPositions` | Current aggregated holdings |
+| `__EFMigrationsHistory` | EF Core migration history |
 
 ### Relationships
 
@@ -233,7 +231,7 @@ FinancialInstruments
        +------- PortfolioPositions
 ```
 
-Each financial instrument may be referenced by multiple trading orders and at most one aggregated portfolio position.
+Each instrument may have multiple orders and at most one aggregated portfolio position.
 
 ## Project Structure
 
@@ -251,11 +249,15 @@ SAZOTECH-TRADING/
 │   ├── Models/
 │   │   └── PortfolioPositionTests.cs
 │   └── SAZOTECH.Trading.Tests.csproj
+├── docs/
+│   └── PORTS.md
 ├── image/
 │   ├── INTERFACE_SAZOTECH_TRADING.png
 │   └── INTERFACE_2.png
+├── .env.example
 ├── README.md
-└── docker-compose.yml
+├── docker-compose.yml
+└── SAZOTECH-TRADING.slnx
 ```
 
 ## Local Development Ports
@@ -264,42 +266,54 @@ SAZOTECH-TRADING/
 |---|---|---|
 | ASP.NET Core Web API | localhost | 5187 |
 | Swagger UI | localhost | 5187 |
-| SQL Server Docker (Windows host) | 127.0.0.1 | 1435 |
-| SQL Server (container) | Internal Docker network | 1433 |
+| SQL Server Docker | 127.0.0.1 | 1435 |
+| SQL Server Container | Internal Docker network | 1433 |
 
-**Important:** The Docker SQL Server instance uses internal port `1433`, mapped to host port `1435`, to avoid conflicts with existing local services.
+**Important:** The Windows host port `1435` forwards traffic to SQL Server's internal container port `1433`.
 
-Additional host-port reservations and conflict checks will be documented during Phase 7.
+### Complete Port Reference
 
-## Running the Project
+See **[Local Port Reference](docs/PORTS.md)** for the full list of reserved development ports, Docker mappings, and Windows troubleshooting commands.
 
-### 1. Start SQL Server
+## Getting Started
 
-From the repository root:
+### Prerequisites
+
+- .NET 10 SDK
+- Docker Desktop with Docker Compose
+- Visual Studio Code or another compatible editor
+- SQL Server Management Studio (optional)
+- Git
+
+### 1. Configure Docker Environment
+
+Create a local `.env` file based on `.env.example`.
+
+Replace the password placeholder with a strong SQL Server password.
+
+Do not commit the real `.env` file.
+
+### 2. Start SQL Server
 
 ```powershell
 docker compose up -d
 docker compose ps
 ```
 
-### 2. Restore Dependencies
+### 3. Restore Dependencies
 
 ```powershell
 dotnet restore
 dotnet tool restore
 ```
 
-### 3. Build the Solution
-
-```powershell
-dotnet build
-```
-
 ### 4. Configure Database Access
 
-Configure `ConnectionStrings:TradingDb` through .NET User Secrets.
+Configure `ConnectionStrings:TradingDb` using .NET User Secrets for the API project.
 
-Never commit passwords, connection credentials, or local `.env` files.
+The local database connection must point to SQL Server at `127.0.0.1,1435`.
+
+Never store real database passwords in committed configuration files.
 
 ### 5. Apply Database Migrations
 
@@ -307,60 +321,58 @@ Never commit passwords, connection credentials, or local `.env` files.
 dotnet tool run dotnet-ef database update --project SAZOTECH.Trading.API --startup-project SAZOTECH.Trading.API
 ```
 
-### 6. Start the API
+### 6. Build the Solution
 
 ```powershell
-dotnet run --project SAZOTECH.Trading.API --launch-profile http
+dotnet build
 ```
 
-### 7. Open Swagger UI
-
-http://localhost:5187/swagger
-
-## Automated Testing
-
-The test project uses **xUnit** with **SQLite in-memory databases** to validate trading behavior without modifying the SQL Server development database.
-
-### Run All Tests
+### 7. Run Automated Tests
 
 ```powershell
 dotnet test
 ```
 
-### Run Only the Test Project
+Or run the test project directly:
 
 ```powershell
 dotnet test SAZOTECH.Trading.Tests/SAZOTECH.Trading.Tests.csproj
 ```
 
-### Latest Validated Results
+### 8. Start the API
 
-| Metric | Result |
+```powershell
+dotnet run --project SAZOTECH.Trading.API --launch-profile http
+```
+
+### 9. Open Swagger
+
+http://localhost:5187/swagger
+
+### 10. Check Database Connectivity
+
+Execute:
+
+`GET /api/database/status`
+
+A healthy connection should return HTTP `200`.
+
+## Automated Testing Results
+
+| Metric | Latest Validated Result |
 |---|---:|
-| Total tests | 16 |
+| Total | 16 |
 | Passed | 16 |
 | Failed | 0 |
 | Skipped | 0 |
 
-### Test Coverage
+Tests use xUnit and SQLite in-memory databases to verify key trading rules without modifying the SQL Server development database.
 
-- Portfolio position model properties
-- Missing trading orders
-- Previously executed orders
-- Initial BUY position creation
-- Weighted average price calculation
-- Partial SELL execution
-- Insufficient portfolio quantity
-- SELL without an open position
-- Complete position closure
-- Invalid order type, quantity, and price
-- Prevention of sequential double execution
+### Testing Limitations
 
-### Test Limitations
-
-SQLite tests are isolated and fast, but database behavior may differ from SQL Server.
-
-Concurrent execution, SQL Server-specific transactions and locking, and full HTTP integration tests remain future improvements.
+- SQL Server-specific integration testing remains future work.
+- Concurrent execution scenarios require additional testing.
+- SQLite behavior may differ from SQL Server transaction and locking behavior.
 
 ## API Usage Examples
 
@@ -380,13 +392,13 @@ Concurrent execution, SQL Server-specific transactions and locking, and full HTT
 
 **POST** `/api/orders/1/execute`
 
-The endpoint updates the order and portfolio position on successful execution.
+The order and portfolio position are updated following successful execution.
 
-### Retrieve Portfolio Positions
+### Retrieve the Portfolio
 
 **GET** `/api/positions`
 
-Illustrative response:
+Example response:
 
 ```json
 [
@@ -406,11 +418,11 @@ Illustrative response:
 ]
 ```
 
-The example uses simulated values.
+All identifiers and values in this example are illustrative.
 
 ## Git Workflow
 
-The project follows feature-branch development, Conventional Commits, and GitHub Pull Requests.
+Development uses feature branches, Conventional Commits, and GitHub Pull Requests.
 
 ```text
 main
@@ -423,41 +435,35 @@ main
  └── feature/docker
 ```
 
-Each major development phase is reviewed and merged into `main`.
+## Known Limitations
 
-## Next Phase — Final Docker Setup & Documentation
-
-Phase 7 will focus on finalizing local deployment and the project's documentation.
-
-Planned tasks include:
-
-- Review Docker Compose configuration.
-- Validate SQL Server startup and persistence.
-- Review application configuration and secrets handling.
-- Verify build and test commands from a clean environment.
-- Document required tools and setup instructions.
-- Review local port reservations and potential conflicts.
-- Finalize the project README and deployment instructions.
+- Single aggregated simulated portfolio
+- No multi-account support
+- No live market connections
+- No real transactions
+- No realized P&L calculation
+- No custom web dashboard
+- No comprehensive concurrent-execution tests
+- No SQL Server-specific automated integration tests
 
 ## Future Improvements
 
 - SQL Server integration testing
-- Concurrent-order execution tests
-- Additional trading order lifecycle states
-- Realized P&L calculations
+- Concurrency and transaction stress testing
+- Additional order lifecycle states
 - Authentication and authorization
 - Multiple trading accounts and portfolios
-- Improved logging and observability
+- Realized profit and loss tracking
+- Centralized logging and monitoring
+- Fully containerized API deployment
 - Custom trading dashboard
 
 ## Project Interface Preview
 
-The images shown at the beginning of this README are conceptual interface mockups.
+The images displayed at the top of this README are conceptual interface mockups.
 
-The current MVP provides a backend REST API with Swagger documentation. A custom web trading dashboard has not yet been implemented.
+The current MVP exposes a backend REST API documented through Swagger UI. A custom trading dashboard has not yet been implemented.
 
 ## Disclaimer
 
-SAZOTECH-TRADING is an educational and portfolio project.
-
-All market data and trading operations are simulated. The application does not connect to live financial exchanges, provide investment advice, or perform real financial transactions.
+SAZOTECH-TRADING is an educational and portfolio project. All prices and trading operations are simulated. The application does not connect to live financial exchanges, provide investment advice, or perform real financial transactions.
