@@ -6,33 +6,39 @@
 
 ![SAZOTECH Trading — Target Interface](image/INTERFACE_2.png)
 
-> **Project Status:** Phase 5 Completed — Order Execution & Portfolio Positions  
+> **Project Status:** Phase 6 Completed — Automated Testing  
 > **Current Version:** MVP under development  
-> **Next Phase:** Unit Testing  
+> **Next Phase:** Phase 7 — Final Docker Setup & Documentation  
 > **Trading Environment:** Simulated trading only
 
 ## Project Overview
 
-SAZOTECH-TRADING is a backend-focused trading order management system developed using C#, ASP.NET Core Web API, Entity Framework Core, and Microsoft SQL Server.
+SAZOTECH-TRADING is a backend-focused trading order management system built with C#, ASP.NET Core Web API, Entity Framework Core, and Microsoft SQL Server.
 
 The application simulates financial instrument management, BUY and SELL order registration, order execution, portfolio position tracking, and basic portfolio valuation.
 
+Automated tests validate core trading business rules using xUnit and isolated SQLite in-memory databases.
+
 The project follows an incremental development workflow using Git feature branches, Conventional Commits, and GitHub Pull Requests.
 
-All market data and trading operations are simulated. No real financial transactions are executed.
+All market prices and trading operations are simulated. No real financial transactions are performed.
 
 ## Technology Stack
 
-- **Backend:** C#, .NET 10, ASP.NET Core Web API
-- **API Documentation:** Swagger / OpenAPI
-- **Database:** Microsoft SQL Server 2022
-- **ORM:** Entity Framework Core 10
-- **Migrations:** EF Core Code First
-- **Containers:** Docker / Docker Compose
-- **Database Management:** SQL Server Management Studio (SSMS)
-- **Security:** .NET User Secrets, NuGet Vulnerability Auditing
-- **Version Control:** Git / GitHub
-- **Development Environment:** Visual Studio Code
+| Category | Technology |
+|---|---|
+| Backend | C#, .NET 10, ASP.NET Core Web API |
+| API Documentation | Swagger / OpenAPI |
+| Database | Microsoft SQL Server 2022 |
+| ORM | Entity Framework Core 10 |
+| Database Migrations | EF Core Code First |
+| Containers | Docker / Docker Compose |
+| Database Management | SQL Server Management Studio (SSMS) |
+| Automated Testing | xUnit |
+| Isolated Test Database | SQLite in-memory |
+| Security | .NET User Secrets, NuGet Vulnerability Auditing |
+| Version Control | Git / GitHub |
+| Development Environment | Visual Studio Code |
 
 ## Development Progress
 
@@ -44,38 +50,38 @@ All market data and trading operations are simulated. No real financial transact
 | 3 | Financial Instruments CRUD API | Completed |
 | 4 | Trading Orders Management | Completed |
 | 5 | Order Execution & Portfolio Positions | Completed |
-| 6 | Unit Testing | Next |
-| 7 | Final Docker Setup & Documentation | Planned |
+| 6 | Automated Testing with xUnit | Completed |
+| 7 | Final Docker Setup & Documentation | Next |
 
 ## Implemented Features
 
 ### Phase 0 — Project Initialization
 
 - Create the .NET solution and ASP.NET Core Web API project.
-- Initialize Git and configure GitHub.
+- Initialize Git and configure the GitHub repository.
 - Configure `.gitignore` and project documentation.
 - Establish a feature-branch development workflow.
 
 ### Phase 1 — REST API & Swagger
 
-- Configure ASP.NET Core controllers.
-- Enable Swagger / OpenAPI documentation.
+- Configure ASP.NET Core API controllers.
+- Enable Swagger / OpenAPI.
 - Add an application health-check endpoint.
 
 ### Phase 2 — Database Integration
 
-- Run Microsoft SQL Server 2022 in Docker.
+- Run SQL Server 2022 in Docker.
 - Configure Entity Framework Core 10.
 - Implement the `TradingDbContext`.
-- Create and apply Code First migrations.
-- Configure the database connection using .NET User Secrets.
+- Create and apply Code First database migrations.
+- Configure database credentials using .NET User Secrets.
 - Add a database connectivity endpoint.
 
 ### Phase 3 — Financial Instruments CRUD
 
 - Create financial instruments.
-- Retrieve all instruments or one instrument by ID.
-- Update existing instruments.
+- Retrieve all instruments or an individual instrument.
+- Update instrument information.
 - Delete instruments when database constraints permit.
 - Validate instrument properties.
 - Prevent duplicate instrument symbols.
@@ -83,28 +89,47 @@ All market data and trading operations are simulated. No real financial transact
 ### Phase 4 — Trading Orders Management
 
 - Register BUY and SELL orders.
-- Associate orders with existing financial instruments.
+- Associate orders with financial instruments.
 - Validate order types and quantities.
-- Calculate order totals using the recorded instrument price.
-- Store trading orders in SQL Server.
-- Retrieve orders by ID or as a collection.
-- Initialize orders with the `NEW` status.
+- Calculate order totals using recorded prices.
+- Persist trading orders in SQL Server.
+- Retrieve orders individually or as a collection.
+- Initialize new orders with `NEW` status.
 
 ### Phase 5 — Order Execution & Portfolio Positions
 
-- Execute previously registered BUY and SELL orders.
-- Transition successfully executed orders from `NEW` to `EXECUTED`.
-- Reject execution attempts for already executed orders.
-- Reject SELL execution when available holdings are insufficient.
+- Execute pending BUY and SELL orders.
+- Update executed orders to `EXECUTED` status.
+- Prevent sequential double execution.
+- Reject SELL executions when holdings are insufficient.
 - Create and update aggregated portfolio positions.
-- Calculate weighted average acquisition prices after BUY executions.
-- Reduce position quantities after SELL executions.
-- Remove positions when their remaining quantity reaches zero.
-- Use SQL Server transactions to update orders and positions together.
-- Retrieve portfolio positions through REST endpoints.
-- Calculate market value, cost basis, and unrealized profit or loss.
+- Recalculate weighted average acquisition prices.
+- Reduce positions after SELL executions.
+- Remove positions when all shares are sold.
+- Use SQL database transactions for order execution.
+- Expose portfolio positions through REST endpoints.
+- Calculate market value, cost basis, and unrealized P&L.
 
-**Current limitations:** The MVP uses one aggregated simulated portfolio. Orders are executed using their recorded prices. Insufficient-holdings SELL orders remain `NEW` after a failed execution attempt. Concurrent-execution stress testing and automated tests have not yet been completed.
+### Phase 6 — Automated Testing
+
+- Create a dedicated `.NET 10` xUnit test project.
+- Reference the API project from the test project.
+- Add SQLite in-memory database support.
+- Test portfolio position model properties.
+- Test order-not-found handling.
+- Test already-executed order protection.
+- Test BUY position creation.
+- Test weighted average acquisition prices.
+- Test partial SELL executions.
+- Test insufficient-holdings rejection.
+- Test SELL orders without an existing position.
+- Test complete position closure.
+- Test invalid quantities, order types, and prices.
+- Verify that rejected execution attempts do not alter positions.
+
+**Latest validated test result: 16 passed, 0 failed.**
+
+These tests cover the main application execution scenarios against SQLite in-memory databases. They do not yet replace SQL Server-specific integration or concurrent-execution testing.
 
 ## API Endpoints
 
@@ -129,7 +154,7 @@ All market data and trading operations are simulated. No real financial transact
 
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/api/orders` | Retrieve all orders |
+| GET | `/api/orders` | Retrieve all trading orders |
 | GET | `/api/orders/{id}` | Retrieve an order by ID |
 | POST | `/api/orders` | Create a BUY or SELL order |
 | POST | `/api/orders/{id}/execute` | Execute a pending trading order |
@@ -143,41 +168,39 @@ All market data and trading operations are simulated. No real financial transact
 
 ## Trading Workflow
 
-1. Create or retrieve a financial instrument.
-2. Register a BUY or SELL trading order.
-3. Verify that the order has the `NEW` status.
-4. Execute the order through the execution endpoint.
-5. Update the portfolio position and mark the order as `EXECUTED`.
+1. Register or retrieve a financial instrument.
+2. Create a BUY or SELL order.
+3. Verify that the order status is `NEW`.
+4. Execute the order.
+5. Update the portfolio position and change the order status to `EXECUTED`.
 6. Retrieve the updated portfolio positions.
 
 ### BUY Execution
 
 A BUY increases the number of shares held.
 
-If a position already exists, the weighted average acquisition price is recalculated:
+When the instrument already has an open position, the weighted average acquisition price is recalculated:
 
 **New Average Price = (Existing Quantity × Existing Average Price + Purchased Quantity × Purchase Price) / Total Quantity**
 
 ### SELL Execution
 
-A SELL decreases the number of shares held.
+A SELL reduces the number of shares held.
 
-The execution is refused if the requested quantity exceeds the available holdings.
+An execution attempt returns a conflict when the available position is insufficient.
 
-When the remaining quantity reaches zero, the open portfolio position is removed.
+When all shares are sold, the open portfolio position is removed while the trading order history remains available.
 
-### Order Status
+### Order Statuses
 
 | Status | Meaning |
 |---|---|
-| `NEW` | The order has been registered but not executed |
-| `EXECUTED` | The order has been executed successfully |
+| `NEW` | Registered but not yet executed |
+| `EXECUTED` | Successfully executed |
 
-Failed execution attempts do not automatically transition orders to a `REJECTED` status in the current MVP.
+Insufficient-holdings execution attempts are rejected with HTTP `409`, but the corresponding order remains `NEW` in the current MVP.
 
 ## Portfolio Valuation
-
-Portfolio endpoints return position information together with calculated financial indicators.
 
 | Indicator | Formula |
 |---|---|
@@ -185,22 +208,22 @@ Portfolio endpoints return position information together with calculated financi
 | Cost Basis | Quantity × Average Acquisition Price |
 | Unrealized P&L | Market Value − Cost Basis |
 
-These calculations use simulated market prices and exclude fees, taxes, and realized P&L.
+Calculations use simulated market data and exclude trading fees, taxes, and realized profit or loss.
 
-## Database
+## Database Architecture
 
-**Database Name:** `SazotechTradingDb`
+**Database:** `SazotechTradingDb`
 
-### Database Tables
+### Tables
 
 | Table | Description |
 |---|---|
-| `FinancialInstruments` | Stores financial instrument information |
-| `TradingOrders` | Stores BUY and SELL orders |
-| `PortfolioPositions` | Stores current aggregated holdings |
-| `__EFMigrationsHistory` | Tracks EF Core migrations |
+| `FinancialInstruments` | Instrument reference data |
+| `TradingOrders` | BUY and SELL order history |
+| `PortfolioPositions` | Aggregated open positions |
+| `__EFMigrationsHistory` | Entity Framework Core migration history |
 
-### Database Relationships
+### Relationships
 
 ```text
 FinancialInstruments
@@ -210,24 +233,49 @@ FinancialInstruments
        +------- PortfolioPositions
 ```
 
-One financial instrument can have multiple trading orders and at most one aggregated portfolio position.
+Each financial instrument may be referenced by multiple trading orders and at most one aggregated portfolio position.
 
-## Local Development Configuration
+## Project Structure
+
+```text
+SAZOTECH-TRADING/
+├── SAZOTECH.Trading.API/
+│   ├── Controllers/
+│   ├── Data/
+│   ├── Migrations/
+│   ├── Models/
+│   └── Program.cs
+├── SAZOTECH.Trading.Tests/
+│   ├── Controllers/
+│   │   └── OrderExecutionsControllerTests.cs
+│   ├── Models/
+│   │   └── PortfolioPositionTests.cs
+│   └── SAZOTECH.Trading.Tests.csproj
+├── image/
+│   ├── INTERFACE_SAZOTECH_TRADING.png
+│   └── INTERFACE_2.png
+├── README.md
+└── docker-compose.yml
+```
+
+## Local Development Ports
 
 | Service | Host | Port |
 |---|---|---|
 | ASP.NET Core Web API | localhost | 5187 |
 | Swagger UI | localhost | 5187 |
-| SQL Server Docker (host) | 127.0.0.1 | 1435 |
+| SQL Server Docker (Windows host) | 127.0.0.1 | 1435 |
 | SQL Server (container) | Internal Docker network | 1433 |
 
-**Important:** The SQL Server container uses port `1433` internally, while the Windows host connects using port `1435` to avoid conflicts with other SQL Server installations.
+**Important:** The Docker SQL Server instance uses internal port `1433`, mapped to host port `1435`, to avoid conflicts with existing local services.
 
-Database credentials must never be committed to Git.
+Additional host-port reservations and conflict checks will be documented during Phase 7.
 
 ## Running the Project
 
-### 1. Start the SQL Server Container
+### 1. Start SQL Server
+
+From the repository root:
 
 ```powershell
 docker compose up -d
@@ -241,7 +289,7 @@ dotnet restore
 dotnet tool restore
 ```
 
-### 3. Build the Application
+### 3. Build the Solution
 
 ```powershell
 dotnet build
@@ -249,9 +297,9 @@ dotnet build
 
 ### 4. Configure Database Access
 
-Configure the `ConnectionStrings:TradingDb` connection string using .NET User Secrets.
+Configure `ConnectionStrings:TradingDb` through .NET User Secrets.
 
-Keep passwords, connection credentials, and local `.env` files outside version control.
+Never commit passwords, connection credentials, or local `.env` files.
 
 ### 5. Apply Database Migrations
 
@@ -269,6 +317,51 @@ dotnet run --project SAZOTECH.Trading.API --launch-profile http
 
 http://localhost:5187/swagger
 
+## Automated Testing
+
+The test project uses **xUnit** with **SQLite in-memory databases** to validate trading behavior without modifying the SQL Server development database.
+
+### Run All Tests
+
+```powershell
+dotnet test
+```
+
+### Run Only the Test Project
+
+```powershell
+dotnet test SAZOTECH.Trading.Tests/SAZOTECH.Trading.Tests.csproj
+```
+
+### Latest Validated Results
+
+| Metric | Result |
+|---|---:|
+| Total tests | 16 |
+| Passed | 16 |
+| Failed | 0 |
+| Skipped | 0 |
+
+### Test Coverage
+
+- Portfolio position model properties
+- Missing trading orders
+- Previously executed orders
+- Initial BUY position creation
+- Weighted average price calculation
+- Partial SELL execution
+- Insufficient portfolio quantity
+- SELL without an open position
+- Complete position closure
+- Invalid order type, quantity, and price
+- Prevention of sequential double execution
+
+### Test Limitations
+
+SQLite tests are isolated and fast, but database behavior may differ from SQL Server.
+
+Concurrent execution, SQL Server-specific transactions and locking, and full HTTP integration tests remain future improvements.
+
 ## API Usage Examples
 
 ### Create a BUY Order
@@ -283,19 +376,17 @@ http://localhost:5187/swagger
 }
 ```
 
-The order is initially saved with the `NEW` status.
-
-### Execute the Order
+### Execute an Order
 
 **POST** `/api/orders/1/execute`
 
-A successful execution returns HTTP `200 OK` and updates the corresponding portfolio position.
+The endpoint updates the order and portfolio position on successful execution.
 
 ### Retrieve Portfolio Positions
 
 **GET** `/api/positions`
 
-Example response:
+Illustrative response:
 
 ```json
 [
@@ -315,26 +406,11 @@ Example response:
 ]
 ```
 
-All values and identifiers above are illustrative.
-
-## Manual Validation
-
-The following scenarios have been exercised through Swagger and SQL Server during development:
-
-- Financial instrument CRUD operations
-- BUY order creation and execution
-- SELL order creation and execution
-- Insufficient-holdings SELL rejection
-- Sequential double-execution prevention
-- Weighted average acquisition price calculations
-- Full position closure
-- Portfolio retrieval and valuation
-
-Automated unit and integration tests will be introduced in Phase 6.
+The example uses simulated values.
 
 ## Git Workflow
 
-Development uses dedicated feature branches, Conventional Commits, and GitHub Pull Requests.
+The project follows feature-branch development, Conventional Commits, and GitHub Pull Requests.
 
 ```text
 main
@@ -347,40 +423,41 @@ main
  └── feature/docker
 ```
 
-## Next Phase — Unit Testing
+Each major development phase is reviewed and merged into `main`.
 
-Phase 6 will focus on introducing automated testing to protect core business rules.
+## Next Phase — Final Docker Setup & Documentation
 
-Planned scenarios include:
+Phase 7 will focus on finalizing local deployment and the project's documentation.
 
-- BUY execution and position creation
-- Weighted average price calculation
-- SELL execution and quantity reduction
-- Insufficient-holdings rejection
-- Sequential double-execution prevention
-- Full position closure
-- HTTP endpoint behavior and validation
+Planned tasks include:
+
+- Review Docker Compose configuration.
+- Validate SQL Server startup and persistence.
+- Review application configuration and secrets handling.
+- Verify build and test commands from a clean environment.
+- Document required tools and setup instructions.
+- Review local port reservations and potential conflicts.
+- Finalize the project README and deployment instructions.
 
 ## Future Improvements
 
-- Automated integration testing against a test database
-- Concurrency and transaction stress testing
-- Additional order lifecycle states
-- Realized profit and loss calculation
-- Improved business validation and error handling
+- SQL Server integration testing
+- Concurrent-order execution tests
+- Additional trading order lifecycle states
+- Realized P&L calculations
 - Authentication and authorization
-- Trading account and multi-portfolio support
-- Centralized logging and observability
-- Final containerized deployment
+- Multiple trading accounts and portfolios
+- Improved logging and observability
+- Custom trading dashboard
 
 ## Project Interface Preview
 
-The images at the beginning of this README represent conceptual UI mockups.
+The images shown at the beginning of this README are conceptual interface mockups.
 
-The current implementation is a backend REST API with Swagger documentation. A custom trading dashboard has not yet been developed.
+The current MVP provides a backend REST API with Swagger documentation. A custom web trading dashboard has not yet been implemented.
 
 ## Disclaimer
 
 SAZOTECH-TRADING is an educational and portfolio project.
 
-Financial instrument prices and trading operations are simulated. The application does not connect to live exchanges, provide investment advice, or execute real financial transactions.
+All market data and trading operations are simulated. The application does not connect to live financial exchanges, provide investment advice, or perform real financial transactions.
