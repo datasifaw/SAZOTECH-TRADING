@@ -65,6 +65,35 @@ namespace SAZOTECH.Trading.API.Migrations
                     b.ToTable("FinancialInstruments");
                 });
 
+            modelBuilder.Entity("SAZOTECH.Trading.API.Models.PortfolioPosition", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("AveragePrice")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<int>("FinancialInstrumentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FinancialInstrumentId")
+                        .IsUnique();
+
+                    b.ToTable("PortfolioPositions");
+                });
+
             modelBuilder.Entity("SAZOTECH.Trading.API.Models.TradingOrder", b =>
                 {
                     b.Property<int>("Id")
@@ -107,6 +136,17 @@ namespace SAZOTECH.Trading.API.Migrations
                     b.HasIndex("FinancialInstrumentId");
 
                     b.ToTable("TradingOrders");
+                });
+
+            modelBuilder.Entity("SAZOTECH.Trading.API.Models.PortfolioPosition", b =>
+                {
+                    b.HasOne("SAZOTECH.Trading.API.Models.FinancialInstrument", "FinancialInstrument")
+                        .WithMany()
+                        .HasForeignKey("FinancialInstrumentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("FinancialInstrument");
                 });
 
             modelBuilder.Entity("SAZOTECH.Trading.API.Models.TradingOrder", b =>
